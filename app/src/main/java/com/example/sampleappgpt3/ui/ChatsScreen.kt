@@ -2,7 +2,6 @@ package com.example.sampleappgpt3.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.R
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -11,10 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.fragment.app.commit
-import com.example.sampleappgpt3.SecondFragment
 import com.example.sampleappgpt3.data.datastore.entity.Chat
 
 @Composable
@@ -23,7 +19,8 @@ fun ChatsScreen(chatRooms: List<Chat>,
                 onClickChatRoom: (Int) -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
         CardItemList(chatRooms = chatRooms, onClickChatRoom = onClickChatRoom)
-        FloatingActionButton(onClick = {onFABClicked}, modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)) {
+        FloatingActionButton(onClick = {
+            onFABClicked()}, modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)) {
             Icon(Icons.Filled.Create, contentDescription = "create new chat")
         }
     }
