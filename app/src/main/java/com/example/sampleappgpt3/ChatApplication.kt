@@ -21,10 +21,12 @@ class ChatApplication : Application() {
         super.onCreate()
         applicationScope.launch {
             if(!chatRepository.doesUserExist(1)) {
-                chatRepository.insertUser()
+                chatRepository.insertUsers()
+            }
+            if(!chatRepository.doesUserExist(2)) {
+                chatRepository.insertGPTUser()
             }
         }
-
     }
 
     override fun onTerminate() {

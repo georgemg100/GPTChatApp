@@ -19,7 +19,7 @@ class ChatRoomsViewModel @Inject constructor(private val chatRepository: ChatRep
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000), // 5 seconds timeout for  performance reasons
         initialValue = ChatRoomsUiState.Loading
-    )
+        )
 
     fun addChatRoom(title: String) {
         viewModelScope.launch {

@@ -1,9 +1,6 @@
 package com.example.sampleappgpt3.data.datastore.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.example.sampleappgpt3.data.datastore.entity.Message
 import com.example.sampleappgpt3.data.datastore.entity.User
 import kotlinx.coroutines.flow.Flow
@@ -32,4 +29,6 @@ interface MessageDao {
     @Insert
     fun insertMessage(message: Message)
 
+    @Upsert
+    fun upsertMessage(message: Message)
 }

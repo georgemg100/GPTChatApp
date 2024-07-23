@@ -1,7 +1,6 @@
 package com.example.sampleappgpt3.ui
 
-import android.annotation.SuppressLint
-import android.widget.EditText
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.ui.Alignment
@@ -9,63 +8,56 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.sampleappgpt3.MessagesUiState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.ui.semantics.Role.Companion.Button
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.sampleappgpt3.data.datastore.entity.Message
-import kotlinx.coroutines.flow.*
 
 
 @Composable
 fun MessagesRoute(messageViewModel: MessageViewModel = hiltViewModel(), chatId: Int) {
-    println("MessagesRoute")
-    //val viewModel: MessageViewModel = viewModel()
-    //messageViewModel.getChatMessages(chatId)
-    //messageViewModel.chatId = chatId
-//    var messagesUiState: MessagesUiState by remember { mutableStateOf(MessagesUiState.Loading) }
-//    var messagesUiStateCopy: MessagesUiState? = null
-//    messageViewModel.chatMessages(chatId).onEach {
-//        messagesUiStateCopy = it
-//    }
-//    messagesUiStateCopy?.let {
-//        messagesUiState = it
-//    } ?: {}
     val messagesUiState: MessagesUiState by messageViewModel.chatMessages(chatId).collectAsStateWithLifecycle()
-    //val messagesUiState: List<Message> by messageViewModel.chatMessages3(chatId).collectAsStateWithLifecycle()
+    val isLoading: Boolean by messageViewModel.isLoadingStateFlow.collectAsStateWithLifecycle()
 
     //messagesUiState =
     when (val state = messagesUiState) { // allows for smart casting
         MessagesUiState.Loading -> Unit
         is MessagesUiState.Success -> {
-            //val chatMessagesState: MutableList<Message> = remember { mutableStateListOf<Message>((messagesUiState as MessagesUiState.Success).chatMessages) }
-            (messagesUiState as MessagesUiState.Success).chatMessages
-            //chatMessagesState.addAll((messagesUiState as MessagesUiState.Success).chatMessages)
-
-            topLevelUI(viewModel = messageViewModel, chatId = chatId, messagesUiState = state, chatMessagesState = chatMessagesState)
+//            if(state.chatMessages.isNotEmpty() && state.chatMessages.last().userID == 2) {
+//                isLoading.value = false
+//            }
+            topLevelUI(viewModel = messageViewModel, chatId = chatId, messagesUiState = state, isLoading)
         }
     }
 }
 
-
 @Composable
-fun topLevelUI(viewModel: MessageViewModel, chatId: Int, messagesUiState: MessagesUiState.Success, chatMessagesState: List<Message>) {
-//    val filteredMessages = messagesUiState.chatMessages.filter {
-//        it.chatId == chatId
-//    }
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(chatMessagesState) { message ->
+fun topLevelUI(viewModel: MessageViewModel, chatId: Int, messagesUiState: MessagesUiState.Success, isLoading: Boolean) {
+
+    Column(modifier = Modifier
+        .fillMaxSize()
+        .wrapContentHeight()) {
+        val lazyListState = rememberLazyListState()
+        // When the list changes, scroll to the last index
+        LaunchedEffect(key1 = messagesUiState.chatMessages) {
+            if (messagesUiState.chatMessages.isNotEmpty()) {
+                lazyListState.animateScrollToItem(messagesUiState.chatMessages.size - 1)
+            }
+        }
+
+        LazyColumn(state = lazyListState, modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f)) {
+            items(messagesUiState.chatMessages) { message ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -73,9 +65,15 @@ fun topLevelUI(viewModel: MessageViewModel, chatId: Int, messagesUiState: Messag
                 ) {
 
                     val modifier =
-                        if (message.userID == 0) Modifier.align(Alignment.TopStart) else Modifier.align(
-                            Alignment.TopEnd
-                        )
+                        if (message.userID == 2) Modifier
+                            .align(Alignment.TopStart)
+                            .fillMaxWidth()
+                            .background(Color(0, 0, 255)) else Modifier
+                            .align(
+                                Alignment.TopEnd
+                            )
+                            .fillMaxWidth()
+                            .background(Color(255, 0, 0))
                     //MessageItem(message.text, modifier)
                     Card(
                         modifier = modifier
@@ -93,11 +91,17 @@ fun topLevelUI(viewModel: MessageViewModel, chatId: Int, messagesUiState: Messag
                     }
                 }
             }
+            if (isLoading) {
+                item {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
+                }
+            }
         }
+
         MyTextInputWithSendButton(
-            modifier = Modifier.align(Alignment.BottomCenter),
+            modifier = Modifier.wrapContentHeight(),
             viewModel,
-            chatId
+            chatId,
         )
     }
 }
@@ -113,15 +117,21 @@ fun MyTextInputWithSendButton(modifier: Modifier, viewModel: MessageViewModel, c
             label = { Text("Enter text") },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text,
-                imeAction = ImeAction.Send
+                imeAction = ImeAction.Send,
             ),
-            keyboardActions = KeyboardActions(onSend = { viewModel.insertMessage(text.value, chatId) }),
+            keyboardActions = KeyboardActions(onSend = {
+                viewModel.insertMessage(text.value, chatId)
+                text.value = ""
+            }),
             textStyle = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         Button(
-            onClick = { viewModel.insertMessage(text.value, chatId) },
+            onClick = {
+                        viewModel.insertMessage(text.value, chatId)
+                        text.value = ""
+                      },
             modifier = Modifier.padding(start = 8.dp)
         ) {
             Icon(Icons.Filled.Send, contentDescription = "Send")

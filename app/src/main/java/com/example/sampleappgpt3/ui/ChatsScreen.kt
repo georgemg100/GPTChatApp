@@ -22,45 +22,71 @@ fun ChatsScreen(chatRooms: List<Chat>,
                 onFABClicked: () -> Unit,
                 onClickChatRoom: (Int) -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
-        CardItemList(chatRooms, onClickChatRoom)
-        FloatingActionButton(onClick = { onFABClicked()}, modifier = Modifier
-            .align(Alignment.BottomEnd)
-            .padding(12.dp) ) {
-            Icon(Icons.Filled.Create,  contentDescription = "create new chat")
+        CardItemList(chatRooms = chatRooms, onClickChatRoom = onClickChatRoom)
+        FloatingActionButton(onClick = {onFABClicked}, modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)) {
+            Icon(Icons.Filled.Create, contentDescription = "create new chat")
         }
     }
+//    Box(modifier = Modifier.fillMaxSize()) {
+//        CardItemList(chatRooms, onClickChatRoom)
+//        FloatingActionButton(onClick = { onFABClicked()}, modifier = Modifier
+//            .align(Alignment.BottomEnd)
+//            .padding(12.dp) ) {
+//            Icon(Icons.Filled.Create,  contentDescription = "create new chat")
+//        }
+//    }
 }
 
 @Composable
 fun CardItemView(cardItem: Chat, onClickChatRoom: (Int) -> Unit) {
+
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
             .clickable {
                 onClickChatRoom(cardItem.chatId)
-            },
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 10.dp),
-
+            }
     ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Text(text = cardItem.title!!, style = MaterialTheme.typography.titleLarge)
             Spacer(modifier = Modifier.height(8.dp))
             Text(text = "chat room", style = MaterialTheme.typography.bodyLarge)
         }
     }
+//    Card(
+//        modifier = Modifier
+//            .padding(8.dp)
+//            .fillMaxWidth()
+//            .clickable {
+//                onClickChatRoom(cardItem.chatId)
+//            },
+//        elevation = CardDefaults.cardElevation(
+//            defaultElevation = 10.dp),
+//
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .padding(16.dp)
+//        ) {
+//            Text(text = cardItem.title!!, style = MaterialTheme.typography.titleLarge)
+//            Spacer(modifier = Modifier.height(8.dp))
+//            Text(text = "chat room", style = MaterialTheme.typography.bodyLarge)
+//        }
+//    }
 }
 
 @Composable
 fun CardItemList(chatRooms: List<Chat>, onClickChatRoom: (Int) -> Unit) {
     LazyColumn {
-        items(chatRooms) { chatRoom ->
+        items(chatRooms) {chatRoom ->
             CardItemView(chatRoom, onClickChatRoom)
         }
     }
+//    LazyColumn {
+//        items(chatRooms) { chatRoom ->
+//            CardItemView(chatRoom, onClickChatRoom)
+//        }
+//    }
 
 }
