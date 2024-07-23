@@ -46,7 +46,6 @@ import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
 sealed interface ChatRoomsUiState {
-
     object Loading : ChatRoomsUiState
     data class Success(
         val chatRooms: List<Chat>,
@@ -169,6 +168,7 @@ class MainActivity : AppCompatActivity() {
             else -> super.onOptionsItemSelected(item)
         }
     }
+
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)

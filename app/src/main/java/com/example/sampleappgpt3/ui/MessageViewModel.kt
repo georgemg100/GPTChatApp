@@ -42,26 +42,16 @@ class MessageViewModel @Inject constructor(val chatRepository: ChatRepository): 
          }
      }
 
-    fun chatMessages3(chatId: Int): StateFlow<List<Message>> {
-        return cachedMessagesStateFlow2?.let {
-            return cachedMessagesStateFlow2 as StateFlow<List<Message>>
-        } ?: run {
-            cachedMessagesStateFlow2 =
-                chatRepository.getMessages(chatId)
-                    //.map(MessagesUiState::Success)
-                    .stateIn(scope = viewModelScope,
-                        started = SharingStarted.WhileSubscribed(5_000),
-                        emptyList<Message>()
-                    )
-            cachedMessagesStateFlow2 as StateFlow<List<Message>>
-        }
-    }
-
      fun insertMessage(message: String, chatId: Int) {
          viewModelScope.launch {
-             chatRepository.insertMessage(message, chatId)
-             _isLoadingStateFlow.value = true
-             _isLoadingStateFlow.value = !chatRepository.queryGPTAndSaveResult(message, chatId)
+             try {
+                 chatRepository.insertMessage(message, chatId)
+                 _isLoadingStateFlow.value = true
+                 _isLoadingStateFlow.value = !chatRepository.queryGPTAndSaveResult(message, chatId)
+             } catch(e: Exception) {
+                 chatRepository.insertMessage("There was a problem sending this message, please check openai api key is added to project", chatId)
+                 _isLoadingStateFlow.value = false
+             }
          }
      }
 }

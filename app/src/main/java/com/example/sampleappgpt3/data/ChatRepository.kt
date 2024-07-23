@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import okhttp3.Dispatcher
 import okhttp3.ResponseBody
+import retrofit2.HttpException
 import retrofit2.Response
 import retrofit2.await
 import java.io.BufferedReader
@@ -32,18 +33,6 @@ class ChatRepository @Inject constructor(private val messageDao: MessageDao,
                                          private val chatDao: ChatDao,
                                          private val userDao: UserDao,
                                          private val gptDatasource: GPTDatasource) {
-
-
-    suspend fun prepopulateUsers() {
-        if (!doesUserExist(1)) {
-            insertUsers()
-        }
-        if (!doesUserExist(2)) {
-            insertGPTUser()
-        }
-    }
-
-    val mutableFlow: Flow<Int>  = listOf(1,2,3,4).asFlow()
 
     fun getChats() : Flow<List<Chat>> = chatDao.getAll()
 
@@ -86,11 +75,20 @@ class ChatRepository @Inject constructor(private val messageDao: MessageDao,
     }
 
     suspend fun sendMessageToGPT(message: String): GPTModel {
-        return gptDatasource.getCompletion(
-            "application/json",
-            CompletionPrompt("gpt-3.5-turbo", listOf(MessageRoleAndContent("user", message)))
-        ).await()
-
+        try {
+            return gptDatasource.getCompletion(
+                "application/json",
+                CompletionPrompt("gpt-3.5-turbo", listOf(MessageRoleAndContent("user", message)))
+            ).await()
+        } catch(e: HttpException) {
+            if (e.code() == 401) {
+                // Handle 401 error, maybe log the user out or show an error message
+                throw Exception("Unauthorized: Please check your credentials.")
+            } else {
+                // Handle other HTTP errors
+                throw e
+            }
+        }
     }
 
     suspend fun queryGPTAndSaveResult(message: String, chatId: Int): Boolean {
